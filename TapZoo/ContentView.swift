@@ -8,13 +8,15 @@
 import SwiftUI
 import AVFoundation
 
-import SwiftUI
-
 struct ContentView: View {
-    @Namespace private var animationNamespace
     @State private var animateIcons = false
     @State private var tappedIcon: String? = nil
-    let icons = ["dog", "cat", "rabbit", "monkey", "lion", "cow", "sheep", "mouse", "fox", "kangaroo", "koala", "fish", "bear", "zebra", "penguin"]
+    // Change icons from a constant to a @State variable
+    @State private var icons = [
+        "dog", "cat", "rabbit", "monkey", "lion", "cow", "sheep",
+        "mouse", "fox", "kangaroo", "koala", "fish", "bear",
+        "zebra", "penguin", "dolphin", "chicken", "horse"
+    ]
     
     var body: some View {
         NavigationView {
@@ -24,9 +26,15 @@ struct ContentView: View {
                     .fontWeight(.bold)
                     .padding()
 
-                IconsGridView(icons: icons, animationNamespace: animationNamespace, animateIcons: $animateIcons, tappedIcon: $tappedIcon)
+                // Pass the shuffled icons to IconsGridView
+                IconsGridView(icons: icons, animateIcons: $animateIcons, tappedIcon: $tappedIcon)
                 
                 Spacer()
+            }
+            .onAppear {
+                // Shuffle the icons array when the view appears
+                icons.shuffle()
+                animateIcons = true
             }
         }
     }
@@ -34,16 +42,23 @@ struct ContentView: View {
 
 struct IconsGridView: View {
     let icons: [String]
-    let animationNamespace: Namespace.ID
     @Binding var animateIcons: Bool
     @Binding var tappedIcon: String?
     
+    // Define the grid layout with three columns
+    let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+    
     var body: some View {
-        LazyVGrid(columns: [GridItem(), GridItem(), GridItem()]) {
+        LazyVGrid(columns: columns, spacing: 20) {
             ForEach(icons, id: \.self) { icon in
-                IconItemView(icon: icon, animationNamespace: animationNamespace, animateIcons: $animateIcons, tappedIcon: $tappedIcon)
+                IconItemView(icon: icon, animateIcons: $animateIcons, tappedIcon: $tappedIcon)
             }
         }
+        .padding()
         .onAppear {
             animateIcons = true
         }
@@ -52,7 +67,6 @@ struct IconsGridView: View {
 
 struct IconItemView: View {
     let icon: String
-    let animationNamespace: Namespace.ID
     @Binding var animateIcons: Bool
     @Binding var tappedIcon: String?
     
@@ -88,45 +102,46 @@ struct DetailView: View {
     private let synthesizer = AVSpeechSynthesizer() // Initialize the speech synthesizer
 
     var body: some View {
-        Spacer() // Pushes the content down
-        
         VStack {
-            Image(icon)
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, 10) // Add a bit of padding below the image to separate it from the text
+            Spacer() // Pushes the content down
             
-            Text(icon.capitalized)  // Displaying the animal's name
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding()
-                .foregroundColor(.primary)
-            
-            // Button to trigger speech synthesis
-            Button(action: {
-                speakAnimalName()
-            }) {
-                Text("Hear Name")
-                    .font(.title2)
+            VStack {
+                Image(icon)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity)
+                    .padding(.bottom, 10) // Add padding below the image
+                
+                Text(icon.capitalized)  // Displaying the animal's name
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
                     .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .foregroundColor(.primary)
+                
+                // Button to trigger speech synthesis
+                Button(action: {
+                    speakAnimalName()
+                }) {
+                    Text("Hear Name")
+                        .font(.title2)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .padding(.top, 20) // Space above the button
             }
-            .padding(.top, 20) // Space above the button
+            .padding(.horizontal)
+            
+            Spacer()
         }
-        
-        .padding(.horizontal)
-        Spacer()
-        
         .navigationBarTitleDisplayMode(.inline)
     }
     
     // Speech synthesis function
     private func speakAnimalName() {
         let utterance = AVSpeechUtterance(string: icon.capitalized)
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-AU") // Set language as English
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-AU") // Set language as English (Australia)
         synthesizer.speak(utterance)
     }
 }
