@@ -140,10 +140,23 @@ struct DetailView: View {
     
     // Speech synthesis function
     private func speakAnimalName() {
+        // Configure audio session to ignore silent mode
+        let audioSession = AVAudioSession.sharedInstance()
+        do {
+            try audioSession.setCategory(.playback, options: [.duckOthers])
+            try audioSession.setActive(true)
+        } catch {
+            print("Failed to set audio session category: \(error)")
+        }
+
+        // Get the device's preferred language
+        let preferredLanguage = Locale.preferredLanguages.first ?? "en-AU" // Default to "en-AU" if no preference
         let utterance = AVSpeechUtterance(string: icon.capitalized)
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-AU") // Set language as English (Australia)
+        utterance.voice = AVSpeechSynthesisVoice(language: preferredLanguage) // Set voice to the device's language
+        
         synthesizer.speak(utterance)
     }
+
 }
 
 struct ContentView_Previews: PreviewProvider {
