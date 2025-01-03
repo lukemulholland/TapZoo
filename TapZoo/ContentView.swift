@@ -26,7 +26,7 @@ struct ContentView: View {
                     .fontWeight(.bold)
                     .padding()
 
-                // Pass the shuffled icons to IconsGridView
+                // Pass icons to IconsGridView
                 IconsGridView(icons: icons, animateIcons: $animateIcons, tappedIcon: $tappedIcon)
                 
                 Spacer()
@@ -147,6 +147,10 @@ struct DetailView: View {
             try audioSession.setActive(true)
         } catch {
             print("Failed to set audio session category: \(error)")
+        }
+        
+        if synthesizer.isSpeaking {
+            synthesizer.stopSpeaking(at: .immediate)
         }
 
         // Get the device's preferred language
